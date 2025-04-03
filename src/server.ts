@@ -1,8 +1,8 @@
+import { Server } from 'http';
 import app from './app';
 import config from './app/config';
-import logger from './app/utils/logger';
 import dbConnect from './app/utils/dbConnect';
-import { Server } from 'http';
+import logger from './app/utils/logger';
 
 let server: Server;
 
