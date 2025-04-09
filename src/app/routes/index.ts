@@ -1,7 +1,7 @@
 import express from 'express';
 import authRoutes from '../../../src/routes/authRoutes';
-import firebaseUserRoutes from '../../../src/routes/firebaseUserRoutes';
 import userRoutes from '../../../src/routes/userRoutes';
+import firebaseUserRoutes from '../../models/FirebaseUser/firebaseUserRoutes';
 import { usersRoutes } from '../modules/Users/users.routes';
 
 const router = express.Router();

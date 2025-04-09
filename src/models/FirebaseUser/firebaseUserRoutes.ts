@@ -1,6 +1,9 @@
 import express from 'express';
-import * as firebaseUserController from '../controllers/firebaseUserController';
-import { authenticateUser, requireAdmin } from '../middleware/authMiddleware';
+import * as firebaseUserController from '../../controllers/firebaseUserController';
+import {
+  authenticateUser,
+  requireAdmin,
+} from '../../middleware/authMiddleware';
 
 const router = express.Router();
 

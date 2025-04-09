@@ -1,5 +1,6 @@
-import logger from '../app/utils/logger';
-import FirebaseUser, { IFirebaseUser, UserRole } from '../models/FirebaseUser';
+import logger from '../../app/utils/logger';
+import { IFirebaseUser, UserRole } from './FirebaseUser.interface';
+import FirebaseUser from './FirebaseUser.model';
 
 // Create a new user
 export const createUser = async (userData: {

@@ -1,18 +1,7 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, {  Model, Schema } from 'mongoose';
+import { IFirebaseUser } from './FirebaseUser.interface';
 
-// User role types
-export type UserRole = 'admin' | 'participant';
 
-// Define interface for Firebase User document
-export interface IFirebaseUser extends Document {
-  uid: string;
-  email: string;
-  displayName: string;
-  role: UserRole;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Create schema
 const firebaseUserSchema = new Schema<IFirebaseUser>(

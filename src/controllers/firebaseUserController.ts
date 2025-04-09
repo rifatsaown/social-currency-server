@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import logger from '../app/utils/logger';
-import * as firebaseUserService from '../services/firebaseUserService';
+import * as firebaseUserService from '../models/FirebaseUser/FirebaseUser.Service';
 
 // Create a new user
 export const createUser = async (req: Request, res: Response) => {
