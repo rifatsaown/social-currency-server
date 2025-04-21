@@ -3,19 +3,17 @@ import { IUser } from './users.interface';
 import Users from './users.model';
 
 // generate access and refresh token
-const generateAccessAndRefreshToken = async (userID: string) => {
+const generateAccessToken = async (userID: string) => {
   try {
     const user = await Users.findById(userID);
     if (!user) {
       throw new CustomError('User not found', 404);
     }
     const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    user.refreshToken = refreshToken; // Save the refresh token to the DB
+    
     await user?.save({ validateBeforeSave: false });
 
-    return { accessToken, refreshToken };
+    return { accessToken };
   } catch (error) {
     if (error instanceof Error) {
       throw new CustomError(error.message, 500);
@@ -33,7 +31,7 @@ const getUsers = async () => {
 const createUser = async (userData: IUser) => {
   const user = await Users.create(userData);
   //generate access and refresh token
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+  const { accessToken } = await generateAccessToken(
     user._id.toString(),
   );
 
@@ -41,7 +39,6 @@ const createUser = async (userData: IUser) => {
   const result = {
     ...user.toJSON(),
     accessToken,
-    refreshToken,
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (result as any)?.password;
@@ -51,19 +48,24 @@ const createUser = async (userData: IUser) => {
 const userEligibilityRequest = async (userData: IUser) => {
   const email = userData.email;
   const user = await Users.findOne({ email });
-  if(!user) {
+  if (!user) {
     const newUser = await Users.create(userData);
-    
+
+    const result = {
+      ...newUser.toJSON(),
+    };
+    return {
+      message: 'User created successfully',
+      data: result,
+    };
   }
-  
-  return { message: 'User already exists' , data: user };
 
-}
-
+  return { message: 'User already exists', data: user };
+};
 
 export const userServices = {
   getUsers,
   createUser,
-  generateAccessAndRefreshToken,
+  generateAccessToken,
   userEligibilityRequest,
 };

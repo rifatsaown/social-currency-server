@@ -40,8 +40,8 @@ const userSchema = new Schema<IUser>(
     eligibleStatus: {
       type: String,
       required: true,
-      enum: ['rejected', 'approved', 'suspended', 'reApply'],
-      default: 'reApply',
+      enum: ['rejected', 'approved', 'suspended', 'reApply' , 'pending'],
+      default: 'pending',
     },
     password: {
       type: String,

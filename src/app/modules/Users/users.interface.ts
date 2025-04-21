@@ -6,7 +6,7 @@ export interface IUser {
   phoneNumber: string;
   city: string;
   status: 'active' | 'inactive' | 'pending' | 'blocked';
-  eligibleStatus: 'rejected' | 'approved' | 'suspended' | 'reApply';
+  eligibleStatus: 'rejected' | 'approved' | 'suspended' | 'reApply' | 'pending';
   password?: string;
 
   //Methods
