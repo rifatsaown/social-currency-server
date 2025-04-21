@@ -6,26 +6,44 @@ import { IUser } from './users.interface';
 
 const userSchema = new Schema<IUser>(
   {
-    userName: {
+    fullName: {
       type: String,
       required: true,
-      unique: true,
     },
     role: {
       type: String,
       required: true,
-      default: 'user',
+      enum: ['admin', 'brand', 'influencer'],
+      default: 'influencer',
     },
     email: {
       type: String,
       required: true,
       unique: true,
     },
-    password: {
+    instaHandle: {
+      type: String,
+    },
+    phoneNumber: {
       type: String,
       required: true,
     },
-    refreshToken: {
+    city: {
+      type: String,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ['active', 'inactive', 'pending', 'blocked'],
+      default: 'pending',
+    },
+    eligibleStatus: {
+      type: String,
+      required: true,
+      enum: ['rejected', 'approved', 'suspended', 'reApply'],
+      default: 'reApply',
+    },
+    password: {
       type: String,
     },
   },

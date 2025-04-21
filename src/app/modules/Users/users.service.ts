@@ -48,8 +48,22 @@ const createUser = async (userData: IUser) => {
   return result;
 };
 
+const userEligibilityRequest = async (userData: IUser) => {
+  const email = userData.email;
+  const user = await Users.findOne({ email });
+  if(!user) {
+    const newUser = await Users.create(userData);
+    
+  }
+  
+  return { message: 'User already exists' , data: user };
+
+}
+
+
 export const userServices = {
   getUsers,
   createUser,
   generateAccessAndRefreshToken,
+  userEligibilityRequest,
 };

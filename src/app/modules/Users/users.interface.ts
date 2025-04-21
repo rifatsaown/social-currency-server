@@ -1,9 +1,13 @@
 export interface IUser {
-  userName: string;
-  role: string;
+  fullName: string;
+  role: 'admin' | 'brand' | 'influencer';
   email: string;
-  password: string;
-  refreshToken?: string;
+  instaHandle: string;
+  phoneNumber: string;
+  city: string;
+  status: 'active' | 'inactive' | 'pending' | 'blocked';
+  eligibleStatus: 'rejected' | 'approved' | 'suspended' | 'reApply';
+  password?: string;
 
   //Methods
   // eslint-disable-next-line no-unused-vars
