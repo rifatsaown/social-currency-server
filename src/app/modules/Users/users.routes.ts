@@ -15,4 +15,6 @@ router.post(
 
 router.post('/eligibility-request', userController.userEligibilityRequest);
 
+router.get('/:email', userController.getUserByEmail);
+
 export const usersRoutes = router;

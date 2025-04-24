@@ -25,9 +25,16 @@ const userEligibilityRequest = catchAsync(async (req, res) => {
 }
 );
 
+const getUserByEmail = catchAsync(async (req, res) => {
+  const { email } = req.params;
+  const result = await userServices.getUserByEmail(email);
+  res.status(200).json(new ApiResponse(200, result));
+});
+
 
 export const userController = {
   getAllusers,
   createUser,
   userEligibilityRequest,
+  getUserByEmail,
 };

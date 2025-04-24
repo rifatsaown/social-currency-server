@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Application routes
-app.use('/', routes);
+app.use('/api', routes);
 
 //Welcome route
 app.get('/', async (req: Request, res: Response) => {

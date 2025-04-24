@@ -63,9 +63,18 @@ const userEligibilityRequest = async (userData: IUser) => {
   return { message: 'User already exists', data: user };
 };
 
+const getUserByEmail = async (email: string) => {
+  const user = await Users.findOne({ email });
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+  return user;
+}
+
 export const userServices = {
   getUsers,
   createUser,
   generateAccessToken,
   userEligibilityRequest,
+  getUserByEmail,
 };
