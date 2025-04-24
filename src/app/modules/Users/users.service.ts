@@ -49,7 +49,9 @@ const logUserActivity = async (
 };
 
 const getUsers = async () => {
-  const result: IUser[] = await Users.find({});
+  const result: IUser[] = await Users.find({ role: 'user' }).select(
+    '-password',
+  );
   return result;
 };
 
@@ -245,6 +247,45 @@ const getDashboardStats = async () => {
   };
 };
 
+const updateUserStatus = async (
+  userId: string,
+  status: 'active' | 'inactive',
+) => {
+  const user = await Users.findById(userId);
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+
+  user.status = status;
+  await user.save();
+
+  // Log the activity
+  await logUserActivity(
+    userId,
+    `User status updated to ${status}`,
+    `User status was changed to ${status}`,
+  );
+
+  return user;
+};
+
+const deleteUser = async (userId: string) => {
+  const user = await Users.findById(userId);
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+
+  // Log the activity before deletion
+  await logUserActivity(
+    userId,
+    'User deleted',
+    `User ${user.fullName} (${user.email}) was deleted from the system`,
+  );
+
+  await Users.findByIdAndDelete(userId);
+  return { message: 'User deleted successfully' };
+};
+
 export const userServices = {
   getUsers,
   createUser,
@@ -255,4 +296,6 @@ export const userServices = {
   logUserActivity,
   getAllEligibilityChecks,
   processEligibilityCheck,
+  updateUserStatus,
+  deleteUser,
 };

@@ -19,6 +19,13 @@ router.post('/eligibility-request', userController.userEligibilityRequest);
 router.get('/eligibility-checks', userController.getAllEligibilityChecks);
 router.post('/eligibility-process', userController.processEligibilityCheck);
 
+// New routes for user management
+router.post('/update-status', userController.updateUserStatus);
+router.delete('/:id', userController.deleteUser);
+
+// Route to get all participants (regular users)
+router.get('/participants', userController.getAllParticipants);
+
 router.get('/:email', userController.getUserByEmail);
 
 // New routes for dashboard statistics and activity logging

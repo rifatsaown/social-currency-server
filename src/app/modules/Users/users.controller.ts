@@ -1,5 +1,6 @@
 import { ApiResponse } from '../../utils/ApiResponse';
 import catchAsync from '../../utils/catchAsync';
+import Users from './users.model';
 import { userServices } from './users.service';
 
 const getAllusers = catchAsync(async (req, res) => {
@@ -65,6 +66,42 @@ const processEligibilityCheck = catchAsync(async (req, res) => {
   res.status(200).json(new ApiResponse(200, result.data, result.message));
 });
 
+const updateUserStatus = catchAsync(async (req, res) => {
+  const { userId, status } = req.body;
+
+  if (!userId || !status || !['active', 'inactive'].includes(status)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'Invalid request parameters'));
+  }
+
+  const result = await userServices.updateUserStatus(userId, status);
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, 'User status updated successfully'));
+});
+
+const deleteUser = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'User ID is required'));
+  }
+
+  const result = await userServices.deleteUser(id);
+  res.status(200).json(new ApiResponse(200, null, result.message));
+});
+
+const getAllParticipants = catchAsync(async (req, res) => {
+  // Get all users with role 'user' (participants)
+  const participants = await Users.find({ role: 'user' }).select(
+    '-password -refreshToken',
+  );
+  res.status(200).json(new ApiResponse(200, participants));
+});
+
 export const userController = {
   getAllusers,
   createUser,
@@ -74,4 +111,7 @@ export const userController = {
   logUserActivity,
   getAllEligibilityChecks,
   processEligibilityCheck,
+  updateUserStatus,
+  deleteUser,
+  getAllParticipants,
 };
