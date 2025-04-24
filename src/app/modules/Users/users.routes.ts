@@ -17,4 +17,8 @@ router.post('/eligibility-request', userController.userEligibilityRequest);
 
 router.get('/:email', userController.getUserByEmail);
 
+// New routes for dashboard statistics and activity logging
+router.get('/dashboard/stats', userController.getDashboardStats);
+router.post('/activity/log', userController.logUserActivity);
+
 export const usersRoutes = router;

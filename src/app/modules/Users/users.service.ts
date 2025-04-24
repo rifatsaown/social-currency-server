@@ -1,4 +1,5 @@
 import CustomError from '../../errors/CusromError';
+import ActivityLog from './activityLog.model';
 import { IUser } from './users.interface';
 import Users from './users.model';
 
@@ -10,7 +11,7 @@ const generateAccessToken = async (userID: string) => {
       throw new CustomError('User not found', 404);
     }
     const accessToken = user.generateAccessToken();
-    
+
     await user?.save({ validateBeforeSave: false });
 
     return { accessToken };
@@ -31,9 +32,7 @@ const getUsers = async () => {
 const createUser = async (userData: IUser) => {
   const user = await Users.create(userData);
   //generate access and refresh token
-  const { accessToken } = await generateAccessToken(
-    user._id.toString(),
-  );
+  const { accessToken } = await generateAccessToken(user._id.toString());
 
   //remove the password from the response
   const result = {
@@ -69,7 +68,103 @@ const getUserByEmail = async (email: string) => {
     throw new CustomError('User not found', 404);
   }
   return user;
-}
+};
+
+const getDashboardStats = async () => {
+  // Get user statistics
+  const users = await Users.find({});
+
+  const totalParticipants = users.length;
+  const activeParticipants = users.filter(
+    (user) => user.status === 'active',
+  ).length;
+  const inactiveParticipants = users.filter(
+    (user) => user.status !== 'active',
+  ).length;
+
+  // Get user counts by role
+  const influencers = users.filter((user) => user.role === 'influencer').length;
+  const brands = users.filter((user) => user.role === 'brand').length;
+  const admins = users.filter((user) => user.role === 'admin').length;
+
+  // Get status distribution data for charts
+  const statusDistribution = {
+    active: users.filter((user) => user.status === 'active').length,
+    inactive: users.filter((user) => user.status === 'inactive').length,
+    pending: users.filter((user) => user.status === 'pending').length,
+    blocked: users.filter((user) => user.status === 'blocked').length,
+  };
+
+  // Get monthly registration data for the past 6 months
+  const today = new Date();
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(today.getMonth() - 6);
+
+  const monthlyRegistrations = await Users.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: sixMonthsAgo, $lte: today },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: '$createdAt' },
+          year: { $year: '$createdAt' },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { '_id.year': 1, '_id.month': 1 },
+    },
+  ]);
+
+  // Get recent activities
+  const recentActivities = await ActivityLog.find()
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate('userId', 'fullName email');
+
+  return {
+    userStats: {
+      totalParticipants,
+      activeParticipants,
+      inactiveParticipants,
+      influencers,
+      brands,
+      admins,
+    },
+    charts: {
+      statusDistribution,
+      monthlyRegistrations,
+    },
+    recentActivities,
+  };
+};
+
+const logUserActivity = async (
+  userId: string,
+  action: string,
+  details: string = '',
+) => {
+  try {
+    const activity = await ActivityLog.create({
+      userId,
+      action,
+      details,
+      timestamp: new Date(),
+    });
+
+    return activity;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new CustomError(error.message, 500);
+    } else {
+      throw new CustomError('Failed to log activity', 500);
+    }
+  }
+};
 
 export const userServices = {
   getUsers,
@@ -77,4 +172,6 @@ export const userServices = {
   generateAccessToken,
   userEligibilityRequest,
   getUserByEmail,
+  getDashboardStats,
+  logUserActivity,
 };

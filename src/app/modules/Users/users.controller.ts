@@ -12,18 +12,23 @@ const createUser = catchAsync(async (req, res) => {
 
   const createdUser = await userServices.createUser(data);
 
-  res.status(200).json(new ApiResponse(200 , createdUser));
+  res.status(200).json(new ApiResponse(200, createdUser));
 });
 
 const userEligibilityRequest = catchAsync(async (req, res) => {
   const data = req.body;
   const result = await userServices.userEligibilityRequest(data);
-  
-  res.status(200).send(
-    new ApiResponse(200, result.data ? result.data : null, result.message ? result.message : 'User not found' )
-  );
-}
-);
+
+  res
+    .status(200)
+    .send(
+      new ApiResponse(
+        200,
+        result.data ? result.data : null,
+        result.message ? result.message : 'User not found',
+      ),
+    );
+});
 
 const getUserByEmail = catchAsync(async (req, res) => {
   const { email } = req.params;
@@ -31,10 +36,22 @@ const getUserByEmail = catchAsync(async (req, res) => {
   res.status(200).json(new ApiResponse(200, result));
 });
 
+const getDashboardStats = catchAsync(async (req, res) => {
+  const stats = await userServices.getDashboardStats();
+  res.status(200).json(new ApiResponse(200, stats));
+});
+
+const logUserActivity = catchAsync(async (req, res) => {
+  const { userId, action, details } = req.body;
+  const activity = await userServices.logUserActivity(userId, action, details);
+  res.status(201).json(new ApiResponse(201, activity));
+});
 
 export const userController = {
   getAllusers,
   createUser,
   userEligibilityRequest,
   getUserByEmail,
+  getDashboardStats,
+  logUserActivity,
 };
