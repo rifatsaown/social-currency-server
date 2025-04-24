@@ -96,9 +96,11 @@ const deleteUser = catchAsync(async (req, res) => {
 
 const getAllParticipants = catchAsync(async (req, res) => {
   // Get all users with role 'user' (participants)
-  const participants = await Users.find({ role: 'user' }).select(
-    '-password -refreshToken',
-  );
+  const participants = await Users.find({ role: 'user' })
+    .select('-password -refreshToken')
+    .sort({
+      createdAt: -1,
+    });
   res.status(200).json(new ApiResponse(200, participants));
 });
 

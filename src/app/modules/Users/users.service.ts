@@ -49,9 +49,11 @@ const logUserActivity = async (
 };
 
 const getUsers = async () => {
-  const result: IUser[] = await Users.find({ role: 'user' }).select(
-    '-password',
-  );
+  const result: IUser[] = await Users.find({ role: 'user' })
+    .select('-password')
+    .sort({
+      createdAt: -1,
+    });
   return result;
 };
 
