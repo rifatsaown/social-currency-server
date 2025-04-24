@@ -83,8 +83,7 @@ const getDashboardStats = async () => {
   ).length;
 
   // Get user counts by role
-  const influencers = users.filter((user) => user.role === 'influencer').length;
-  const brands = users.filter((user) => user.role === 'brand').length;
+  const userCount = users.filter((user) => user.role === 'user').length;
   const admins = users.filter((user) => user.role === 'admin').length;
 
   // Get status distribution data for charts
@@ -131,8 +130,7 @@ const getDashboardStats = async () => {
       totalParticipants,
       activeParticipants,
       inactiveParticipants,
-      influencers,
-      brands,
+      userCount,
       admins,
     },
     charts: {

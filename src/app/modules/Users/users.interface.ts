@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 export interface IUser {
   fullName: string;
-  role: 'admin' | 'brand' | 'influencer';
+  role: 'admin' | 'user';
   email: string;
   instaHandle: string;
   phoneNumber: string;
