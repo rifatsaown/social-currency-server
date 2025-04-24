@@ -1,5 +1,6 @@
 import CustomError from '../../errors/CusromError';
 import ActivityLog from './activityLog.model';
+import EligibilityCheck from './eligibilityCheck.model';
 import { IUser } from './users.interface';
 import Users from './users.model';
 
@@ -24,6 +25,29 @@ const generateAccessToken = async (userID: string) => {
   }
 };
 
+const logUserActivity = async (
+  userId: string,
+  action: string,
+  details: string = '',
+) => {
+  try {
+    const activity = await ActivityLog.create({
+      userId,
+      action,
+      details,
+      timestamp: new Date(),
+    });
+
+    return activity;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new CustomError(error.message, 500);
+    } else {
+      throw new CustomError('Failed to log activity', 500);
+    }
+  }
+};
+
 const getUsers = async () => {
   const result: IUser[] = await Users.find({});
   return result;
@@ -44,22 +68,102 @@ const createUser = async (userData: IUser) => {
   return result;
 };
 
-const userEligibilityRequest = async (userData: IUser) => {
-  const email = userData.email;
-  const user = await Users.findOne({ email });
-  if (!user) {
-    const newUser = await Users.create(userData);
-
-    const result = {
-      ...newUser.toJSON(),
-    };
+const userEligibilityRequest = async (userData: {
+  fullName: string;
+  instagramHandle: string;
+  mobileNumber: string;
+  email: string;
+  city: string;
+}) => {
+  // Check if the user already exists in eligibilityChecks
+  const existingCheck = await EligibilityCheck.findOne({
+    email: userData.email,
+  });
+  if (existingCheck) {
     return {
-      message: 'User created successfully',
-      data: result,
+      message:
+        'You have already submitted an eligibility request. Please wait for approval.',
+      data: existingCheck,
     };
   }
 
-  return { message: 'User already exists', data: user };
+  // Check if the user already exists in the users collection
+  const existingUser = await Users.findOne({ email: userData.email });
+  if (existingUser) {
+    return {
+      message: 'User already exists',
+      data: existingUser,
+    };
+  }
+
+  // Create a new eligibility check entry
+  const eligibilityCheck = await EligibilityCheck.create({
+    fullName: userData.fullName,
+    email: userData.email,
+    instagramHandle: userData.instagramHandle,
+    mobileNumber: userData.mobileNumber,
+    city: userData.city,
+    status: 'pending',
+  });
+
+  return {
+    message: 'Eligibility check request submitted successfully',
+    data: eligibilityCheck,
+  };
+};
+
+const getAllEligibilityChecks = async () => {
+  const eligibilityChecks = await EligibilityCheck.find().sort({
+    createdAt: -1,
+  });
+  return eligibilityChecks;
+};
+
+const processEligibilityCheck = async (
+  id: string,
+  status: 'approved' | 'rejected',
+) => {
+  const eligibilityCheck = await EligibilityCheck.findById(id);
+  if (!eligibilityCheck) {
+    throw new CustomError('Eligibility check not found', 404);
+  }
+
+  // Update the eligibility check status
+  eligibilityCheck.status = status;
+  await eligibilityCheck.save();
+
+  // If approved, create a user in the users collection
+  if (status === 'approved') {
+    const newUser = await Users.create({
+      fullName: eligibilityCheck.fullName,
+      email: eligibilityCheck.email,
+      instaHandle: eligibilityCheck.instagramHandle,
+      phoneNumber: eligibilityCheck.mobileNumber,
+      city: eligibilityCheck.city,
+      role: 'user',
+      status: 'active',
+      eligibleStatus: 'approved',
+      // Generate a random temporary password
+      password: Math.random().toString(36).slice(-8),
+    });
+
+    // Log the activity
+    await logUserActivity(
+      newUser._id.toString(),
+      'User approved and created from eligibility check',
+      `User ${newUser.fullName} was approved and created from eligibility check process`,
+    );
+
+    return {
+      message: 'User has been approved and account has been created',
+      data: newUser,
+    };
+  }
+
+  return {
+    message: 'User has been rejected',
+    data: eligibilityCheck,
+  };
 };
 
 const getUserByEmail = async (email: string) => {
@@ -141,29 +245,6 @@ const getDashboardStats = async () => {
   };
 };
 
-const logUserActivity = async (
-  userId: string,
-  action: string,
-  details: string = '',
-) => {
-  try {
-    const activity = await ActivityLog.create({
-      userId,
-      action,
-      details,
-      timestamp: new Date(),
-    });
-
-    return activity;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new CustomError(error.message, 500);
-    } else {
-      throw new CustomError('Failed to log activity', 500);
-    }
-  }
-};
-
 export const userServices = {
   getUsers,
   createUser,
@@ -172,4 +253,6 @@ export const userServices = {
   getUserByEmail,
   getDashboardStats,
   logUserActivity,
+  getAllEligibilityChecks,
+  processEligibilityCheck,
 };

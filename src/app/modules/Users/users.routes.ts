@@ -15,6 +15,10 @@ router.post(
 
 router.post('/eligibility-request', userController.userEligibilityRequest);
 
+// New routes for eligibility check management
+router.get('/eligibility-checks', userController.getAllEligibilityChecks);
+router.post('/eligibility-process', userController.processEligibilityCheck);
+
 router.get('/:email', userController.getUserByEmail);
 
 // New routes for dashboard statistics and activity logging

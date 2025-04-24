@@ -47,6 +47,24 @@ const logUserActivity = catchAsync(async (req, res) => {
   res.status(201).json(new ApiResponse(201, activity));
 });
 
+const getAllEligibilityChecks = catchAsync(async (req, res) => {
+  const eligibilityChecks = await userServices.getAllEligibilityChecks();
+  res.status(200).json(new ApiResponse(200, eligibilityChecks));
+});
+
+const processEligibilityCheck = catchAsync(async (req, res) => {
+  const { id, status } = req.body;
+
+  if (!id || !status || !['approved', 'rejected'].includes(status)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'Invalid request parameters'));
+  }
+
+  const result = await userServices.processEligibilityCheck(id, status);
+  res.status(200).json(new ApiResponse(200, result.data, result.message));
+});
+
 export const userController = {
   getAllusers,
   createUser,
@@ -54,4 +72,6 @@ export const userController = {
   getUserByEmail,
   getDashboardStats,
   logUserActivity,
+  getAllEligibilityChecks,
+  processEligibilityCheck,
 };
