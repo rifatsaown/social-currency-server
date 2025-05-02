@@ -11,6 +11,7 @@ export interface IUser {
   eligibleStatus: 'rejected' | 'approved' | 'suspended' | 'reApply' | 'pending';
   password?: string;
   coinBalance?: number;
+  firebaseUid?: string;
 
   // Methods
   // eslint-disable-next-line no-unused-vars

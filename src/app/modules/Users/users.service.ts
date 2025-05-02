@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { auth } from '../../config/firebase';
 import CustomError from '../../errors/CusromError';
 import ActivityLog from './activityLog.model';
 import EligibilityCheck from './eligibilityCheck.model';
@@ -137,32 +138,52 @@ const processEligibilityCheck = async (
   eligibilityCheck.status = status;
   await eligibilityCheck.save();
 
-  // If approved, create a user in the users collection
+  // If approved, create a user in the users collection and Firebase
   if (status === 'approved') {
-    const newUser = await Users.create({
-      fullName: eligibilityCheck.fullName,
-      email: eligibilityCheck.email,
-      instaHandle: eligibilityCheck.instagramHandle,
-      phoneNumber: eligibilityCheck.mobileNumber,
-      city: eligibilityCheck.city,
-      role: 'user',
-      status: 'active',
-      eligibleStatus: 'approved',
-      // Generate a random temporary password
-      password: Math.random().toString(36).slice(-8),
-    });
+    // Generate a random temporary password
+    const temporaryPassword = Math.random().toString(36).slice(-8);
 
-    // Log the activity
-    await logUserActivity(
-      newUser._id.toString(),
-      'User approved and created from eligibility check',
-      `User ${newUser.fullName} was approved and created from eligibility check process`,
-    );
+    try {
+      // Create user in Firebase authentication
+      const userRecord = await auth.createUser({
+        email: eligibilityCheck.email,
+        password: temporaryPassword,
+        displayName: eligibilityCheck.fullName,
+        disabled: false,
+      });
 
-    return {
-      message: 'User has been approved and account has been created',
-      data: newUser,
-    };
+      // Create user in MongoDB
+      const newUser = await Users.create({
+        fullName: eligibilityCheck.fullName,
+        email: eligibilityCheck.email,
+        instaHandle: eligibilityCheck.instagramHandle,
+        phoneNumber: eligibilityCheck.mobileNumber,
+        city: eligibilityCheck.city,
+        role: 'user',
+        status: 'active',
+        eligibleStatus: 'approved',
+        password: temporaryPassword, // Store the same temporary password
+        firebaseUid: userRecord.uid, // Store Firebase UID for reference
+      });
+
+      // Log the activity
+      await logUserActivity(
+        newUser._id.toString(),
+        'User approved and created from eligibility check',
+        `User ${newUser.fullName} was approved and created from eligibility check process`,
+      );
+
+      return {
+        message: 'User has been approved and account has been created',
+        data: {
+          ...newUser.toJSON(),
+          temporaryPassword, // Include temporary password in the response
+        },
+      };
+    } catch (error) {
+      console.error('Error creating Firebase user:', error);
+      throw new CustomError('Failed to create user account in Firebase', 500);
+    }
   }
 
   return {

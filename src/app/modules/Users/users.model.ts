@@ -47,6 +47,9 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+    firebaseUid: {
+      type: String,
+    },
   },
   { timestamps: true },
 );
