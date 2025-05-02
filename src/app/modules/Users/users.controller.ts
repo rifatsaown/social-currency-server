@@ -97,7 +97,7 @@ const deleteUser = catchAsync(async (req, res) => {
 const getAllParticipants = catchAsync(async (req, res) => {
   // Get all users with role 'user' (participants)
   const participants = await Users.find({ role: 'user' })
-    .select('-password -refreshToken')
+    .select('-refreshToken') // Removed the -password to include passwords in the response
     .sort({
       createdAt: -1,
     });
