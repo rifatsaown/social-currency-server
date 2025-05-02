@@ -5,6 +5,7 @@ import admin from '../config/firebase';
 import CustomError from '../errors/CusromError';
 import Users from '../modules/Users/users.model';
 import { ApiResponse } from '../utils/ApiResponse';
+import logger from '../utils/logger';
 
 const authMiddleware = async (
   req: Request,
@@ -43,8 +44,8 @@ const authMiddleware = async (
 
         req.user = user.toObject();
         next();
-      } catch (firebaseError: any) {
-        console.error('Firebase token verification failed:', firebaseError);
+      } catch (error: unknown) {
+        logger.error(error);
         throw new CustomError('Invalid or expired Firebase token', 401);
       }
     } else {
@@ -65,11 +66,8 @@ const authMiddleware = async (
       req.user = user.toObject();
       next();
     }
-  } catch (error: any) {
-    console.error(
-      'Auth middleware error:',
-      error.message || 'Unknown auth error',
-    );
+  } catch (error: unknown) {
+    logger.error(error);
     res
       .status(401)
       .send(new ApiResponse(401, {}, 'Access token is expired or invalid'));

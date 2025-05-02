@@ -5,6 +5,7 @@ import ActivityLog from './activityLog.model';
 import EligibilityCheck from './eligibilityCheck.model';
 import { IUser } from './users.interface';
 import Users from './users.model';
+import logger from '../../utils/logger';
 
 // generate access and refresh token
 const generateAccessToken = async (userID: string) => {
@@ -181,7 +182,7 @@ const processEligibilityCheck = async (
         },
       };
     } catch (error) {
-      console.error('Error creating Firebase user:', error);
+      logger.error('Error creating Firebase user:', error);
       throw new CustomError('Failed to create user account in Firebase', 500);
     }
   }
