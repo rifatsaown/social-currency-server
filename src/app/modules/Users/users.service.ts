@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import CustomError from '../../errors/CusromError';
 import ActivityLog from './activityLog.model';
 import EligibilityCheck from './eligibilityCheck.model';
@@ -288,6 +289,61 @@ const deleteUser = async (userId: string) => {
   return { message: 'User deleted successfully' };
 };
 
+const getUserCampaigns = async (userId: string) => {
+  // Find all campaigns where the user is a participant
+  const Campaign = mongoose.model('Campaign');
+  const campaigns = await Campaign.find({
+    participants: { $in: [userId] },
+  })
+    .select('name description status createdAt')
+    .sort({ createdAt: -1 });
+
+  return campaigns;
+};
+
+// Add function to update user's coin balance
+const updateCoinBalance = async (userId: string, amount: number) => {
+  const user = await Users.findById(userId);
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+
+  // Add the amount to the existing balance (or 0 if not set)
+  const currentBalance = user.coinBalance || 0;
+  user.coinBalance = currentBalance + amount;
+  await user.save();
+
+  // Log the activity
+  await logUserActivity(
+    userId,
+    `Coin balance updated`,
+    `${amount >= 0 ? 'Added' : 'Deducted'} ${Math.abs(amount)} coins, new balance: ${user.coinBalance}`,
+  );
+
+  return user;
+};
+
+// Add function to get user dashboard data
+const getUserDashboardData = async (userId: string) => {
+  const user = await Users.findById(userId).select('-password');
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+
+  const campaigns = await getUserCampaigns(userId);
+
+  // Get recent activity for this user
+  const recentActivities = await ActivityLog.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(5);
+
+  return {
+    user,
+    campaigns,
+    recentActivities,
+  };
+};
+
 export const userServices = {
   getUsers,
   createUser,
@@ -300,4 +356,7 @@ export const userServices = {
   processEligibilityCheck,
   updateUserStatus,
   deleteUser,
+  getUserCampaigns,
+  updateCoinBalance,
+  getUserDashboardData,
 };

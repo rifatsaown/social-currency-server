@@ -1,7 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { IUser } from './users.interface';
 
-
 const userSchema = new Schema<IUser>(
   {
     fullName: {
@@ -44,11 +43,13 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
     },
+    coinBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );
-
-
 
 const Users: Model<IUser> = mongoose.model('users', userSchema);
 export default Users;

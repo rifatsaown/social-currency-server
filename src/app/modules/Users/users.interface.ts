@@ -10,6 +10,7 @@ export interface IUser {
   status: 'active' | 'inactive' | 'pending' | 'blocked';
   eligibleStatus: 'rejected' | 'approved' | 'suspended' | 'reApply' | 'pending';
   password?: string;
+  coinBalance?: number;
 
   // Methods
   // eslint-disable-next-line no-unused-vars

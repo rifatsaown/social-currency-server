@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
+import authMiddleware from '../../middleware/authMiddleware';
 import validateRequest from '../../middleware/validateRequest';
-
 import { userController } from './users.controller';
 import { validateUser } from './users.validation';
 
@@ -25,6 +25,15 @@ router.delete('/:id', userController.deleteUser);
 
 // Route to get all participants (regular users)
 router.get('/participants', userController.getAllParticipants);
+
+// User campaign routes
+router.get('/campaigns/:id', userController.getUserCampaigns);
+
+// Coin balance routes
+router.post('/update-coin-balance', userController.updateCoinBalance);
+
+// User dashboard routes
+router.get('/dashboard', authMiddleware, userController.getUserDashboardData);
 
 router.get('/:email', userController.getUserByEmail);
 

@@ -104,6 +104,48 @@ const getAllParticipants = catchAsync(async (req, res) => {
   res.status(200).json(new ApiResponse(200, participants));
 });
 
+// New endpoints for user dashboard
+const getUserCampaigns = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'User ID is required'));
+  }
+
+  const campaigns = await userServices.getUserCampaigns(id);
+  res.status(200).json(new ApiResponse(200, campaigns));
+});
+
+const updateCoinBalance = catchAsync(async (req, res) => {
+  const { userId, amount } = req.body;
+
+  if (!userId || amount === undefined || isNaN(amount)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'Invalid request parameters'));
+  }
+
+  const user = await userServices.updateCoinBalance(userId, Number(amount));
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, 'Coin balance updated successfully'));
+});
+
+const getUserDashboardData = catchAsync(async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return res
+      .status(401)
+      .json(new ApiResponse(401, null, 'User not authenticated'));
+  }
+
+  const dashboardData = await userServices.getUserDashboardData(userId);
+  res.status(200).json(new ApiResponse(200, dashboardData));
+});
+
 export const userController = {
   getAllusers,
   createUser,
@@ -116,4 +158,7 @@ export const userController = {
   updateUserStatus,
   deleteUser,
   getAllParticipants,
+  getUserCampaigns,
+  updateCoinBalance,
+  getUserDashboardData,
 };
